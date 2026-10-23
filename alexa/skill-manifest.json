@@ -1,0 +1,82 @@
+{
+  "skillManifest": {
+    "manifestVersion": "1.0",
+    "publishingInformation": {
+      "category": "PRODUCTIVITY",
+      "distributionCountries": [],
+      "distributionMode": "PUBLIC",
+      "isAvailableWorldwide": true,
+      "locales": {
+        "en-US": {
+          "description": "Ask ABUZ8 is the voice concierge for an autonomous agent company. Agents claim work is done; this skill never takes their word for it. Every mission lives in an append-only ISNAD ledger -- a claim is not a fact, and only a separate verification event moves a mission to VERIFIED. Ask for your company status, drill into what is still only claimed, and decide Tier-3 actions (anything that sends, spends, or publishes) by voice. Decisions are hash-bound: your spoken yes applies only to the exact payload you were presented, identified by its SHA-256. If the payload changed after the request, the decision is refused and the request is voided -- in code, not in a prompt. The skill is a front-end to a self-hosted MCP server (spec 2025-11-25, Streamable HTTP) and works unchanged against the owner's live company feed.",
+          "examplePhrases": [
+            "Alexa, ask ABUZ8 for my company status",
+            "Alexa, ask ABUZ8 what is still only claimed",
+            "Alexa, ask ABUZ8 if there are any approvals waiting"
+          ],
+          "keywords": [
+            "agent company",
+            "verification",
+            "approvals",
+            "mission control",
+            "isnad",
+            "abuz8"
+          ],
+          "largeIconUri": "REPLACE_ME_https://example.invalid/ask-abuz8-icon-512.png",
+          "name": "Ask ABUZ8",
+          "smallIconUri": "REPLACE_ME_https://example.invalid/ask-abuz8-icon-108.png",
+          "summary": "Verified status and hash-bound approvals for your agent company, by voice. Claimed is not done."
+        }
+      },
+      "testingInstructions": "REPLACE_ME before submission. Smoke path once the endpoint is live: (1) 'Alexa, open ask a b u z 8' then 'company status' -- expect the ISNAD roll-up, never a claim reported as fact. (2) 'what is still only claimed' -- expect the CLAIMED missions, labeled unverified. (3) 'approvals waiting' then 'approve it' -- expect the decision recorded against the presented payload hash. (4) Re-present the same action with an edited payload to confirm the decision is refused and the request voided."
+    },
+    "apis": {
+      "custom": {
+        "endpoint": {
+          "sslCertificateType": "Trusted",
+          "uri": "https://YOUR-MCP-ENDPOINT/mcp"
+        },
+        "interfaces": [
+          {
+            "type": "ALEXA_PRESENTATION_APL"
+          }
+        ],
+        "regions": {
+          "NA": {
+            "endpoint": {
+              "sslCertificateType": "Trusted",
+              "uri": "https://YOUR-MCP-ENDPOINT/mcp"
+            }
+          }
+        }
+      }
+    },
+    "events": {
+      "endpoint": {
+        "uri": "https://YOUR-MCP-ENDPOINT/mcp"
+      },
+      "publications": [],
+      "regions": {
+        "NA": {
+          "endpoint": {
+            "uri": "https://YOUR-MCP-ENDPOINT/mcp"
+          }
+        }
+      }
+    },
+    "permissions": [],
+    "privacyAndCompliance": {
+      "allowsPurchases": false,
+      "containsAds": false,
+      "isChildDirected": false,
+      "isExportCompliant": true,
+      "locales": {
+        "en-US": {
+          "privacyPolicyUrl": "REPLACE_ME_https://example.invalid/ask-abuz8/privacy",
+          "termsOfUseUrl": "REPLACE_ME_https://example.invalid/ask-abuz8/terms"
+        }
+      },
+      "usesPersonalInfo": false
+    }
+  }
+}

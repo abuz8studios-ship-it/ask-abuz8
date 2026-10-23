@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask ABUZ8 — Mission Control · Simulated Alexa+ Experience</title>
+<style>
+  :root{
+    --bg:#0a0e13; --panel:#11161e; --panel2:#0d1219; --line:#1f2a3a; --line2:#2a3a52;
+    --txt:#e8eef6; --dim:#8fa3bd; --accent:#4da3ff;
+    --ok:#35d07f; --warn:#ffb020; --bad:#ff5c5c; --info:#4da3ff;
+    --ok-bg:#0d2b1c; --warn-bg:#2e2105; --bad-bg:#33121a; --info-bg:#10273f; --open-bg:#1b222c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);
+       font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+       font-size:14px;line-height:1.45}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  a{color:var(--accent)}
+
+  /* ---------- top bar ---------- */
+  .topbar{border-bottom:1px solid var(--line);background:linear-gradient(180deg,#0d1420,#0a0e13);
+          padding:14px 20px 12px}
+  .topbar-in{max-width:1240px;margin:0 auto;display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand .sq{width:14px;height:14px;background:var(--accent);border-radius:3px;flex:none;
+             box-shadow:0 0 14px rgba(77,163,255,.55)}
+  .brand h1{margin:0;font-size:22px;letter-spacing:2.5px;font-weight:800;white-space:nowrap}
+  .brand h1 span{color:var(--accent)}
+  .brand .tag{color:var(--dim);font-size:12.5px;letter-spacing:.4px}
+  .brand .tag b{color:var(--txt)}
+  .top-right{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .pill{display:inline-flex;align-items:center;gap:7px;padding:4px 11px;border-radius:999px;
+        border:1px solid var(--line2);font-size:11.5px;font-weight:700;letter-spacing:.6px}
+  .pill .dot{width:8px;height:8px;border-radius:50%;background:var(--dim);flex:none}
+  .pill.live{color:var(--ok);border-color:#1d4d33}.pill.live .dot{background:var(--ok);box-shadow:0 0 8px var(--ok)}
+  .pill.demo{color:var(--warn);border-color:#5a430d}.pill.demo .dot{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+  .badge-sim{border:1px solid var(--warn);color:var(--warn);border-radius:999px;padding:4px 11px;
+             font-size:11.5px;font-weight:700;letter-spacing:.6px}
+  .tbtn{background:var(--panel);color:var(--txt);border:1px solid var(--line2);border-radius:999px;
+        padding:5px 12px;font-size:12px;cursor:pointer;font-weight:600}
+  .tbtn:hover{border-color:var(--accent)}
+  .tbtn.off{color:var(--dim);text-decoration:line-through}
+
+  /* ---------- stats strip ---------- */
+  .stats{max-width:1240px;margin:14px auto 0;padding:0 20px;display:grid;gap:10px;
+         grid-template-columns:repeat(6,1fr)}
+  @media(max-width:900px){.stats{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
+  .stat{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--dim);
+        border-radius:10px;padding:9px 12px}
+  .stat .n{font-size:24px;font-weight:800;line-height:1.05}
+  .stat .l{font-size:10.5px;letter-spacing:1.2px;color:var(--dim);font-weight:700;margin-top:2px}
+  .stat.s-VERIFIED{border-left-color:var(--ok)} .stat.s-VERIFIED .n{color:var(--ok)}
+  .stat.s-CLAIMED{border-left-color:var(--warn)} .stat.s-CLAIMED .n{color:var(--warn)}
+  .stat.s-DISPUTED{border-left-color:var(--bad)} .stat.s-DISPUTED .n{color:var(--bad)}
+  .stat.s-IN_PROGRESS{border-left-color:var(--info)} .stat.s-IN_PROGRESS .n{color:var(--info)}
+  .stat.s-PENDING{border-left-color:var(--warn);background:linear-gradient(180deg,#161207,var(--panel))}
+  .stat.s-PENDING .n{color:var(--warn)}
+  .segbar{max-width:1240px;margin:10px auto 0;padding:0 20px}
+  .segbar .track{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--panel2);
+                 border:1px solid var(--line)}
+  .segbar .seg{height:100%;transition:width .5s ease}
+  .seg-VERIFIED{background:var(--ok)}.seg-CLAIMED{background:var(--warn)}.seg-DISPUTED{background:var(--bad)}
+  .seg-IN_PROGRESS{background:var(--info)}.seg-OPEN{background:#3a4657}
+
+  /* ---------- layout ---------- */
+  .grid{max-width:1240px;margin:14px auto 26px;padding:0 20px;display:grid;gap:14px;
+        grid-template-columns:minmax(0,7fr) minmax(0,5fr);align-items:start}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+  .card h2{margin:0 0 4px;font-size:12px;letter-spacing:1.6px;color:var(--dim);font-weight:800;
+           text-transform:uppercase;display:flex;align-items:center;gap:8px}
+  .card h2 .rule{flex:1;height:1px;background:var(--line)}
+  .card .hint{color:var(--dim);font-size:12px;margin:0 0 10px}
+
+  /* ---------- mission cards ---------- */
+  .mission{border:1px solid var(--line);border-left:3px solid var(--dim);border-radius:10px;
+           padding:10px 12px;margin-bottom:8px;background:var(--panel2);cursor:pointer;
+           transition:border-color .15s,transform .15s}
+  .mission:hover{border-color:var(--line2);transform:translateX(2px)}
+  .mission .r1{display:flex;gap:8px;align-items:baseline}
+  .mission .id{font-weight:800;font-size:12px;color:var(--accent);letter-spacing:.5px;flex:none}
+  .mission .t{font-weight:650;font-size:13.5px;flex:1;min-width:0}
+  .mission .meta{color:var(--dim);font-size:11.5px;margin-top:3px}
+  .mission.st-VERIFIED{border-left-color:var(--ok)} .mission.st-CLAIMED{border-left-color:var(--warn)}
+  .mission.st-DISPUTED{border-left-color:var(--bad)} .mission.st-IN_PROGRESS{border-left-color:var(--info)}
+  .tag-state{flex:none;font-size:10px;font-weight:800;letter-spacing:1px;padding:2.5px 8px;border-radius:999px}
+  .tag-VERIFIED{background:var(--ok-bg);color:var(--ok)} .tag-CLAIMED{background:var(--warn-bg);color:var(--warn)}
+  .tag-DISPUTED{background:var(--bad-bg);color:var(--bad)} .tag-IN_PROGRESS{background:var(--info-bg);color:var(--info)}
+  .tag-OPEN{background:var(--open-bg);color:var(--dim)}
+  .tag-PENDING{background:var(--warn-bg);color:var(--warn)} .tag-VOID{background:var(--bad-bg);color:var(--bad)}
+  .tag-APPROVED{background:var(--ok-bg);color:var(--ok)} .tag-DENIED{background:var(--bad-bg);color:var(--bad)}
+
+  /* ---------- claimed != done rail ---------- */
+  .claims-rail{border:1px solid #5a430d;background:linear-gradient(180deg,#181106,var(--panel));
+               border-radius:14px;padding:14px 16px;margin-bottom:14px}
+  .claims-rail h2{color:var(--warn)}
+  .claims-rail .mission{background:#14100a}
+  .claims-clear{color:var(--ok);font-size:13px;padding:6px 2px}
+
+  /* ---------- approval hero cards ---------- */
+  .appr{border:1px solid var(--warn);border-radius:12px;padding:13px 14px;margin-bottom:12px;
+        background:linear-gradient(180deg,#171106,var(--panel2));
+        box-shadow:0 0 0 1px rgba(255,176,32,.12),0 6px 22px rgba(0,0,0,.35)}
+  .appr .r1{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+  .appr .aid{font-weight:800;color:var(--warn);letter-spacing:.5px}
+  .appr .act{font-weight:650;font-size:14px;line-height:1.4}
+  .appr .by{color:var(--dim);font-size:12px;margin:2px 0 9px}
+  .payload{border:1px solid var(--line);border-radius:9px;background:#0a0e13;padding:9px 11px;margin:0 0 10px}
+  .payload .pr{display:flex;gap:10px;font-size:12.5px;padding:2.5px 0;border-bottom:1px dashed #1a2434}
+  .payload .pr:last-child{border-bottom:0}
+  .payload .pk{color:var(--dim);flex:none;min-width:86px}
+  .payload .pv{word-break:break-word}
+  .hashline{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:baseline;margin:0 0 11px}
+  .hash-big{font-size:21px;font-weight:700;color:var(--warn);letter-spacing:2.5px}
+  .hash-full{font-size:10.5px;color:var(--dim);word-break:break-all}
+  .btnrow{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{border-radius:10px;padding:10px 16px;font-size:13.5px;font-weight:750;cursor:pointer;border:1px solid}
+  .btn:active{transform:translateY(1px)}
+  .btn-approve{background:var(--ok-bg);color:var(--ok);border-color:#1d4d33}
+  .btn-approve:hover{background:#11402a}
+  .btn-deny{background:var(--bad-bg);color:var(--bad);border-color:#5c1f28}
+  .btn-deny:hover{background:#471722}
+  .btn-tamper{width:100%;margin-top:9px;background:transparent;color:var(--warn);
+              border:1px dashed var(--warn);border-radius:10px;padding:9px 12px;font-size:12.5px;
+              font-weight:700;cursor:pointer;letter-spacing:.3px}
+  .btn-tamper:hover{background:var(--warn-bg)}
+  .tamper-cap{color:var(--dim);font-size:11.5px;margin-top:6px;line-height:1.5}
+  .none-note{color:var(--dim);font-size:13px;padding:4px 2px}
+
+  /* ---------- verdict banners ---------- */
+  .verdict{border-radius:12px;padding:13px 15px;margin-bottom:12px;font-size:13.5px;line-height:1.5;
+           border:1px solid;display:none}
+  .verdict.show{display:block}
+  .verdict.ok{background:var(--ok-bg);border-color:#1d4d33;color:#c9f2dd}
+  .verdict.void{background:var(--bad-bg);border-color:var(--bad);color:#ffd9d9;
+                box-shadow:0 0 0 1px rgba(255,92,92,.25),0 8px 26px rgba(0,0,0,.4)}
+  .verdict .vh{font-weight:850;letter-spacing:.6px;font-size:14.5px;margin-bottom:3px}
+  .verdict.void .vh{color:var(--bad);font-size:16px}
+  .verdict .mono{font-size:11.5px;word-break:break-all;opacity:.85}
+
+  /* ---------- conversation ---------- */
+  #transcript{height:342px;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding-right:4px}
+  .msg{max-width:92%;padding:9px 12px;border-radius:12px;line-height:1.5;white-space:pre-wrap;
+       font-size:13.5px;word-break:break-word}
+  .msg.user{align-self:flex-end;background:#1c3f6e;border-bottom-right-radius:4px}
+  .msg.alexa{align-self:flex-start;background:#182130;border:1px solid var(--line);border-bottom-left-radius:4px}
+  .msg.sys{align-self:center;color:var(--dim);font-size:11.5px;background:none;padding:2px 6px;text-align:center}
+  .trace{align-self:flex-start;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:10.5px;
+         color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:2px 9px;background:var(--panel2)}
+  .trace b{color:var(--accent);font-weight:600}
+  .caret::after{content:"▌";color:var(--accent);animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:0}}
+  .thinking{align-self:flex-start;color:var(--dim);font-size:12px;font-style:italic}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:11px 0}
+  .chip{background:#182233;color:var(--txt);border:1px solid var(--line2);padding:6px 11px;
+        border-radius:999px;cursor:pointer;font-size:12.5px}
+  .chip:hover{border-color:var(--accent)}
+  .chip.hero{border-color:var(--warn);color:var(--warn);border-style:dashed}
+  .chip.hero:hover{background:var(--warn-bg)}
+  .inrow{display:flex;gap:8px}
+  .inrow input{flex:1;background:#0a0e13;border:1px solid var(--line2);color:var(--txt);
+               border-radius:10px;padding:11px 12px;font-size:14px;min-width:0}
+  .inrow input:focus{outline:none;border-color:var(--accent)}
+  button.primary{background:var(--accent);color:#04101f;border:0;font-weight:750;border-radius:10px;
+                 padding:11px 16px;cursor:pointer;font-size:14px}
+  button.micb{background:#182233;color:var(--txt);border:1px solid var(--line2);border-radius:10px;
+              padding:11px 14px;cursor:pointer;font-size:15px}
+  button.micb.listening{border-color:var(--bad);color:var(--bad);animation:pulse 1.1s ease-in-out infinite}
+  @keyframes pulse{50%{box-shadow:0 0 0 5px rgba(255,92,92,.18)}}
+  button.micb.unsupported{opacity:.4}
+
+  .foot{color:var(--dim);font-size:12px;max-width:1240px;margin:0 auto 26px;padding:0 20px;line-height:1.65}
+  .foot b{color:var(--txt)}
+  .foot code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="sq"></div>
+      <div>
+        <h1>ASK <span>ABUZ8</span></h1>
+        <div class="tag">Mission control for an agent company — <b>CLAIMED ≠ DONE</b></div>
+      </div>
+    </div>
+    <div class="top-right">
+      <span class="badge-sim">SIMULATED ALEXA+ EXPERIENCE</span>
+      <span class="pill" id="connPill"><span class="dot"></span><span id="connTxt">CONNECTING…</span></span>
+      <button class="tbtn" id="ttsBtn" title="Toggle spoken replies">VOICE: ON</button>
+    </div>
+  </div>
+</div>
+
+<div class="stats" id="stats"></div>
+<div class="segbar"><div class="track" id="segTrack"></div></div>
+
+<div class="grid">
+  <div>
+    <div class="claims-rail" id="claimsRail" style="display:none">
+      <h2>⚠ Claimed — not verified <span class="rule"></span></h2>
+      <p class="hint" style="color:#c8a45c">Agents said this work is done. Nobody has verified it yet,
+      so this console will not call it done. That separation is the whole product.</p>
+      <div id="claimsList"></div>
+    </div>
+
+    <div class="card">
+      <h2>Live ISNAD board <span class="rule"></span></h2>
+      <p class="hint">Every mission in the append-only ledger, folded live from MCP tool calls.
+      Click a mission to ask about it by voice or text.</p>
+      <div id="board"><p class="none-note">Loading the ledger…</p></div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" style="border-color:#5a430d">
+      <h2 style="color:var(--warn)">Tier-3 approvals — owner's decision <span class="rule"></span></h2>
+      <p class="hint">Anything that <b>sends, spends, or publishes</b> stops here. A decision is
+      <b>hash-bound</b>: it applies only to the exact payload shown, identified by its SHA-256.
+      Change one digit and the server refuses — and voids the request.</p>
+      <div class="verdict" id="verdict"></div>
+      <div id="approvals"><p class="none-note">Loading…</p></div>
+    </div>
+
+    <div class="card">
+      <h2>Conversation — voice first <span class="rule"></span></h2>
+      <div id="transcript"></div>
+      <div class="chips" id="chips"></div>
+      <div class="inrow">
+        <button class="micb" id="mic" title="Speak (Web Speech API)">🎙</button>
+        <input type="text" id="input" autocomplete="off"
+               placeholder='Try: "Alexa, ask ABUZ8 what is still only claimed"'>
+        <button class="primary" id="send">Ask</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="foot">
+  <b>How it works:</b> this page is a genuine client of the self-hosted <b>MCP server
+  (spec 2025-11-25, Streamable HTTP)</b> in <code>mcp_server/server.py</code> — every number above
+  comes from a live <code>tools/call</code> to <code>company_status</code>, <code>mission_status</code>,
+  <code>unverified_claims</code>, <code>pending_approvals</code>, or <code>decide_approval</code>.
+  Watch the trace chips in the conversation: nothing is hard-coded.
+  Utterances are matched against <code>simulator/intents.json</code> (Alexa-format interaction
+  model, intents map 1:1 to tools). Approvals are <b>hash-bound and one-way</b>: decisions append
+  to the ledger and persist across sessions. <b>Reset the demo:</b> stop the server and delete
+  <code>data/feed.runtime.json</code> (in DEMO MODE, use the reset chip in the conversation).
+  If the MCP server is not reachable, this page switches to <b>DEMO MODE</b>: the same ISNAD rules
+  run locally in your browser over a mirrored copy of <code>data/feed.json</code>, clearly labeled,
+  so the experience still demos standalone. Voice input uses the browser's Web Speech API where
+  available; typing always works.
+</p>
+
+<script>
+"use strict";
+/* =====================================================================
+   Ask ABUZ8 mission-control console.
+   A genuine MCP client: identical JSON-RPC tools/call shapes to the
+   original simulator. If the MCP server is unreachable it falls back to
+   DEMO MODE — the same ISNAD rules (isnad_core.py) re-implemented in JS
+   over a mirrored copy of data/feed.json, clearly labeled in the UI.
+   ===================================================================== */
+
+/*PURE-BEGIN*/
+/* Canonical JSON: same encoding as Python json.dumps(payload,
+   sort_keys=True, separators=(",", ":")) for the ASCII payloads used here. */
+function canonicalJSON(v){
+  if (v === null || typeof v === "number" || typeof v === "boolean") return JSON.stringify(v);
+  if (typeof v === "string") return JSON.stringify(v);
+  if (Array.isArray(v)) return "[" + v.map(canonicalJSON).join(",") + "]";
+  const keys = Object.keys(v).sort();
+  return "{" + keys.map(k => JSON.stringify(k) + ":" + canonicalJSON(v[k])).join(",") + "}";
+}
+/* SHA-256 (FIPS 180-4), synchronous, dependency-free. */
+function sha256Hex(ascii){
+  function rr(v,a){return (v>>>a)|(v<<(32-a));}
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+    0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+    0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+    0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+    0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+    0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+    0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+    0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const bytes=[]; const s=unescape(encodeURIComponent(ascii));
+  for(let i=0;i<s.length;i++) bytes.push(s.charCodeAt(i)&0xff);
+  const bitLen=bytes.length*8;
+  bytes.push(0x80);
+  while(bytes.length%64!==56) bytes.push(0);
+  const hi=Math.floor(bitLen/0x100000000), lo=bitLen>>>0;
+  bytes.push((hi>>>24)&0xff,(hi>>>16)&0xff,(hi>>>8)&0xff,hi&0xff,
+             (lo>>>24)&0xff,(lo>>>16)&0xff,(lo>>>8)&0xff,lo&0xff);
+  let h0=0x6a09e667,h1=0xbb67ae85,h2=0x3c6ef372,h3=0xa54ff53a,
+      h4=0x510e527f,h5=0x9b05688c,h6=0x1f83d9ab,h7=0x5be0cd19;
+  const w=new Array(64);
+  for(let off=0;off<bytes.length;off+=64){
+    for(let t=0;t<16;t++) w[t]=(bytes[off+t*4]<<24)|(bytes[off+t*4+1]<<16)|(bytes[off+t*4+2]<<8)|bytes[off+t*4+3];
+    for(let t=16;t<64;t++){
+      const s0=rr(w[t-15],7)^rr(w[t-15],18)^(w[t-15]>>>3);
+      const s1=rr(w[t-2],17)^rr(w[t-2],19)^(w[t-2]>>>10);
+      w[t]=(w[t-16]+s0+w[t-7]+s1)|0;
+    }
+    let a=h0,b=h1,c=h2,d=h3,e=h4,f=h5,g=h6,h=h7;
+    for(let t=0;t<64;t++){
+      const S1=rr(e,6)^rr(e,11)^rr(e,25);
+      const ch=(e&f)^(~e&g);
+      const t1=(h+S1+ch+K[t]+w[t])|0;
+      const S0=rr(a,2)^rr(a,13)^rr(a,22);
+      const mj=(a&b)^(a&c)^(b&c);
+      const t2=(S0+mj)|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;
+    }
+    h0=(h0+a)|0;h1=(h1+b)|0;h2=(h2+c)|0;h3=(h3+d)|0;
+    h4=(h4+e)|0;h5=(h5+f)|0;h6=(h6+g)|0;h7=(h7+h)|0;
+  }
+  return [h0,h1,h2,h3,h4,h5,h6,h7].map(x=>("0000000"+(x>>>0).toString(16)).slice(-8)).join("");
+}
+function payloadHash(payload){ return sha256Hex(canonicalJSON(payload)); }
+/*PURE-END*/
+
+/* ---------------- DEMO MODE: local ISNAD engine ----------------
+   Mirrors mcp_server/isnad_core.py rule-for-rule: fold the append-only
+   feed into mission/approval state; decisions are hash-bound, one-way,
+   and a hash mismatch VOIDS the request. Demo data mirrors data/feed.json
+   (same note applies: SAMPLE DATA in the production feed's shape). */
+const DEMO_FEED = {"company":"ABUZ8","events":[{"agent":"asred","mission_id":"M-101","seq":1,"tier":1,"title":"Package ISNAD Verification System for Gumroad ($49)","ts":"2026-10-21T16:02:00-04:00","type":"mission_created"},{"agent":"asred","claim":"done","detail":"Guide, ledger template, and listing copy assembled and zipped.","mission_id":"M-101","seq":2,"ts":"2026-10-21T18:41:00-04:00","type":"claim"},{"by":"asred-self-check","evidence":"isnad-verification-system.zip verified on disk; guide 892 words; ledger CSV present.","mission_id":"M-101","seq":3,"ts":"2026-10-21T18:44:00-04:00","type":"evidence"},{"by":"aisha","mission_id":"M-101","seq":4,"ts":"2026-10-21T19:05:00-04:00","type":"verification","verdict":"VERIFIED"},{"agent":"asred","mission_id":"M-102","seq":5,"tier":2,"title":"Apply unified identity to GitHub and Hugging Face profiles","ts":"2026-10-21T19:20:00-04:00","type":"mission_created"},{"agent":"asred","claim":"done","detail":"Identity pack drafted: canonical file, profile README, bios.","mission_id":"M-102","seq":6,"ts":"2026-10-21T20:12:00-04:00","type":"claim"},{"by":"asred-self-check","evidence":"Pack files verified on disk. NOT yet applied to live profiles -- application blocked on account access.","mission_id":"M-102","seq":7,"ts":"2026-10-21T20:13:00-04:00","type":"evidence"},{"agent":"asred","mission_id":"M-103","seq":8,"tier":1,"title":"DealerTrack Phase 1 on ConsoleAI (one-click agent registration)","ts":"2026-10-21T20:30:00-04:00","type":"mission_created"},{"agent":"asred","claim":"done","detail":"Registry upgrade, hash-bound approvals, five dashboard bays built.","mission_id":"M-103","seq":9,"ts":"2026-10-21T21:02:00-04:00","type":"claim"},{"by":"aisha","detail":"7-item done-test passed, including $1-cap mission refusing an over-cap dispatch.","mission_id":"M-103","seq":10,"ts":"2026-10-21T21:15:00-04:00","type":"verification","verdict":"VERIFIED"},{"agent":"amanecer","mission_id":"M-104","seq":11,"tier":1,"title":"Morning money briefing -- gig scan and billing watch","ts":"2026-10-22T04:55:00-04:00","type":"mission_created"},{"agent":"amanecer","claim":"progress","detail":"Scan running.","mission_id":"M-104","seq":12,"ts":"2026-10-22T05:01:00-04:00","type":"claim"},{"action":"Publish the Gumroad listing 'ISNAD Verification System' at $49 (makes the product buyable)","action_id":"A-201","payload":{"op":"publish_listing","price_usd":49,"product":"ISNAD Verification System","store":"gumroad"},"requested_by":"asred","seq":13,"tier":3,"ts":"2026-10-22T05:03:00-04:00","type":"approval_requested"},{"action":"Post the launch announcement for ABUZ8 Studios on X","action_id":"A-202","payload":{"account":"@AbuZ8Studios","op":"post_social","platform":"x","text":"448 products audited. 37 ready. Proof over claims -- the full register is public."},"requested_by":"amanecer","seq":14,"tier":3,"ts":"2026-10-22T05:04:00-04:00","type":"approval_requested"}]};
+
+function demoSayMission(m){
+  const ev = m.evidence.length;
+  if (m.state==="VERIFIED") return m.title+": verified done. "+ev+" evidence item(s) on record.";
+  if (m.state==="CLAIMED") return m.title+": "+m.agent+" claims it is done, but it is NOT verified yet. Claimed is not done.";
+  if (m.state==="DISPUTED") return m.title+": disputed. The claim did not survive verification.";
+  if (m.state==="IN_PROGRESS") return m.title+": in progress by "+m.agent+".";
+  return m.title+": open, no claim yet.";
+}
+class DemoFeed {
+  constructor(){ this.reset(); }
+  reset(){ this.doc = JSON.parse(JSON.stringify(DEMO_FEED)); this.events = this.doc.events; }
+  append(ev){ ev = Object.assign({}, ev); ev.seq = this.events.length ? this.events[this.events.length-1].seq+1 : 1;
+              this.events.push(ev); return ev; }
+  missions(){
+    const out = {};
+    for (const ev of this.events){
+      const mid = ev.mission_id; if (!mid) continue;
+      const m = out[mid] || (out[mid] = {mission_id:mid,title:null,agent:null,tier:null,state:"OPEN",claims:[],evidence:[],verdicts:[]});
+      if (ev.type==="mission_created"){ m.title=ev.title; m.agent=ev.agent; m.tier=ev.tier; }
+      else if (ev.type==="claim"){ m.claims.push(ev);
+        if (ev.claim==="done" && (m.state==="OPEN"||m.state==="IN_PROGRESS")) m.state="CLAIMED";
+        else if (ev.claim==="progress" && m.state==="OPEN") m.state="IN_PROGRESS"; }
+      else if (ev.type==="evidence"){ m.evidence.push(ev); }
+      else if (ev.type==="verification"){ m.verdicts.push(ev); m.state = ev.verdict==="VERIFIED" ? "VERIFIED" : "DISPUTED"; }
+    }
+    return out;
+  }
+  approvals(){
+    const out = {};
+    for (const ev of this.events){
+      const aid = ev.action_id; if (!aid) continue;
+      if (ev.type==="approval_requested")
+        out[aid] = {action_id:aid, tier:ev.tier, action:ev.action, payload:ev.payload,
+                    requested_by:ev.requested_by, payload_hash:payloadHash(ev.payload),
+                    status:"PENDING", decision:null};
+      else if (ev.type==="approval_decided" && out[aid]){ out[aid].status = ev.decision; out[aid].decision = ev; }
+    }
+    return out;
+  }
+  pendingApprovals(){ return Object.values(this.approvals()).filter(a=>a.status==="PENDING"); }
+  decide(actionId, decision, presentedHash, by){
+    if (decision!=="APPROVED" && decision!=="DENIED")
+      return {ok:false, error:"decision must be APPROVED or DENIED, got '"+decision+"'"};
+    const ap = this.approvals()[actionId];
+    if (!ap) return {ok:false, error:"unknown action_id '"+actionId+"'"};
+    if (ap.status!=="PENDING") return {ok:false, error:actionId+" is already "+ap.status+" -- decisions are one-way"};
+    if (String(presentedHash).toLowerCase() !== ap.payload_hash){
+      this.append({type:"approval_decided", action_id:actionId, decision:"VOID", by:by||"owner",
+                   payload_hash:ap.payload_hash,
+                   note:"presented hash did not match requested payload -- approval voided"});
+      return {ok:false, voided:true,
+              error:"payload hash mismatch -- the action changed after it was presented, so the approval was VOIDED, not applied"};
+    }
+    const ev = this.append({type:"approval_decided", action_id:actionId, decision:decision,
+                            by:by||"owner", payload_hash:ap.payload_hash});
+    return {ok:true, action_id:actionId, decision:decision, ledger_seq:ev.seq, payload_hash:ap.payload_hash};
+  }
+}
+const demoFeed = new DemoFeed();
+function missionView(m, withEvidence){
+  const v = {mission_id:m.mission_id, title:m.title, agent:m.agent, state:m.state,
+             evidence_count:m.evidence.length, say:demoSayMission(m)};
+  if (withEvidence) v.evidence = m.evidence.map(e=>e.evidence);
+  return v;
+}
+function demoTool(name, args){
+  args = args || {};
+  if (name==="company_status"){
+    const ms = demoFeed.missions(), counts = {};
+    Object.values(ms).forEach(m=>{ counts[m.state]=(counts[m.state]||0)+1; });
+    const pend = demoFeed.pendingApprovals().length;
+    const parts = [Object.keys(ms).length+" missions on the board."];
+    for (const st of ["VERIFIED","CLAIMED","IN_PROGRESS","DISPUTED","OPEN"])
+      if (counts[st]) parts.push(counts[st]+" "+st.toLowerCase()+".");
+    parts.push(pend ? pend+" approval(s) waiting for you." : "No approvals waiting.");
+    return {company:demoFeed.doc.company||"ABUZ8", missions_total:Object.keys(ms).length,
+            by_state:counts, pending_approvals:pend, say:parts.join(" ")};
+  }
+  if (name==="mission_status"){
+    const ms = demoFeed.missions(), id = (args.mission_id||"").trim().toUpperCase();
+    if (id){
+      const m = ms[id];
+      if (!m) return {error:"no mission '"+id+"' on the board", say:"I don't see a mission "+id+" on the board."};
+      return missionView(m, true);
+    }
+    const views = Object.values(ms).map(m=>missionView(m,false));
+    return {missions:views, say:views.map(v=>v.say).join(" ")};
+  }
+  if (name==="unverified_claims"){
+    const claimed = Object.values(demoFeed.missions()).filter(m=>m.state==="CLAIMED").map(m=>missionView(m,false));
+    return {count:claimed.length, missions:claimed,
+            say: claimed.length ? claimed.length+" mission(s) are claimed but NOT verified: "+claimed.map(v=>v.say).join(" ")
+                                : "Nothing is sitting at claimed-but-unverified right now."};
+  }
+  if (name==="pending_approvals"){
+    const views = demoFeed.pendingApprovals().map(a=>({
+      action_id:a.action_id, action:a.action, tier:a.tier, requested_by:a.requested_by,
+      payload:a.payload, payload_hash:a.payload_hash, short_hash:a.payload_hash.slice(0,8),
+      say:a.action_id+": "+a.action+" Requested by "+a.requested_by+". Payload hash "+a.payload_hash.slice(0,8)+"."}));
+    return {count:views.length, approvals:views,
+            say: views.length ? views.length+" action(s) need your decision: "+views.map(v=>v.say).join(" ")
+                              : "No Tier-3 actions are waiting for your decision."};
+  }
+  if (name==="decide_approval"){
+    const r = demoFeed.decide((args.action_id||"").trim().toUpperCase(),
+                              (args.decision||"").trim().toUpperCase(),
+                              (args.payload_hash||"").trim(), "owner-via-alexaplus");
+    if (r.ok) r.say = r.decision+": "+args.action_id+" is recorded in the ledger as entry "+r.ledger_seq+". It cannot be undone.";
+    else r.say = r.error || "The decision was refused.";
+    return r;
+  }
+  throw new Error("unknown tool "+name);
+}
+
+/* ---------------- MCP client (live mode) ---------------- */
+const MCP_URL = "/mcp";
+let rpcId = 0;
+let MODE = "connecting";           // "live" | "demo"
+async function mcpCall(name, args){
+  const res = await fetch(MCP_URL, {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Accept":"application/json, text/event-stream" },
+    body: JSON.stringify({ jsonrpc:"2.0", id:++rpcId, method:"tools/call",
+                           params:{ name, arguments: args || {} } })
+  });
+  if (!res.ok) throw new Error("HTTP "+res.status);
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "MCP error");
+  const text = (data.result.content || []).map(c=>c.text || "").join("");
+  try { return JSON.parse(text); } catch(e){ return { say:text }; }
+}
+async function callTool(name, args, traceEl){
+  const t0 = performance.now();
+  try {
+    const out = MODE==="demo" ? demoTool(name, args) : await mcpCall(name, args);
+    if (traceEl) traceEl.innerHTML = "→ tools/call <b>"+name+"</b> · "+MODE+" · "+Math.max(1,Math.round(performance.now()-t0))+" ms";
+    return out;
+  } catch(e) {
+    if (MODE !== "demo"){ setMode("demo"); return callTool(name, args, traceEl); }
+    throw e;
+  }
+}
+function setMode(m){
+  MODE = m;
+  const pill = document.getElementById("connPill"), txt = document.getElementById("connTxt");
+  pill.className = "pill " + (m==="live" ? "live" : "demo");
+  txt.textContent = m==="live" ? "LIVE · MCP SERVER" : "DEMO MODE · SAMPLE LEDGER";
+}
+
+/* ---------------- rendering: stats / board / claims / approvals ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?"":s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+let lastPresented = null;      // {action_id, payload_hash} conversational context
+let pendingNow = [];           // latest pending approval views
+
+function renderStats(cs){
+  const by = cs.by_state || {};
+  const states = ["VERIFIED","CLAIMED","IN_PROGRESS","DISPUTED","OPEN"];
+  const labels = {VERIFIED:"Verified done", CLAIMED:"Claimed ≠ done", IN_PROGRESS:"In progress",
+                  DISPUTED:"Disputed", OPEN:"Open"};
+  $("stats").innerHTML =
+    states.map(st => '<div class="stat s-'+st+'"><div class="n">'+(by[st]||0)+'</div><div class="l">'+labels[st]+'</div></div>').join("") +
+    '<div class="stat s-PENDING"><div class="n">'+(cs.pending_approvals||0)+'</div><div class="l">Approvals waiting</div></div>';
+  const total = Math.max(1, cs.missions_total || 0);
+  $("segTrack").innerHTML = states.filter(st=>by[st])
+    .map(st=>'<div class="seg seg-'+st+'" style="width:'+(100*by[st]/total)+'%"></div>').join("");
+}
+function missionCard(m, clickable){
+  return '<div class="mission st-'+m.state+'" '+(clickable?'data-mid="'+esc(m.mission_id)+'" title="Ask about this mission"':'')+'>'+
+    '<div class="r1"><span class="id">'+esc(m.mission_id)+'</span>'+
+    '<span class="t">'+esc(m.title)+'</span>'+
+    '<span class="tag-state tag-'+m.state+'">'+m.state.replace("_"," ")+'</span></div>'+
+    '<div class="meta">agent: '+esc(m.agent)+' · evidence items: '+m.evidence_count+
+    (m.state==="CLAIMED" ? ' · <b style="color:var(--warn)">claimed — NOT verified</b>' : '')+'</div></div>';
+}
+function renderBoard(missions){
+  const order = {CLAIMED:0, DISPUTED:1, IN_PROGRESS:2, OPEN:3, VERIFIED:4};
+  const sorted = (missions||[]).slice().sort((a,b)=> (order[a.state]-order[b.state]) || a.mission_id.localeCompare(b.mission_id));
+  $("board").innerHTML = sorted.length ? sorted.map(m=>missionCard(m,true)).join("")
+                                       : '<p class="none-note">No missions on the board.</p>';
+  document.querySelectorAll("#board .mission").forEach(el=>{
+    el.onclick = ()=> handle("What is the status of "+el.getAttribute("data-mid")+"?");
+  });
+}
+function renderClaims(uc){
+  const rail = $("claimsRail");
+  if (uc && uc.count){
+    rail.style.display = "";
+    $("claimsList").innerHTML = uc.missions.map(m=>missionCard(m,true)).join("");
+    document.querySelectorAll("#claimsList .mission").forEach(el=>{
+      el.onclick = ()=> handle("What is the status of "+el.getAttribute("data-mid")+"?");
+    });
+  } else {
+    rail.style.display = "";
+    $("claimsList").innerHTML = '<div class="claims-clear">✓ Nothing is sitting at claimed-but-unverified. Every claim on the board has been checked.</div>';
+  }
+}
+function payloadRows(p){
+  if (p == null || typeof p !== "object")
+    return '<div class="pr"><span class="pk">payload</span><span class="pv mono">'+esc(JSON.stringify(p))+'</span></div>';
+  return Object.keys(p).map(k=>{
+    const v = p[k];
+    const shown = (v && typeof v === "object") ? canonicalJSON(v) : String(v);
+    return '<div class="pr"><span class="pk mono">'+esc(k)+'</span><span class="pv mono">'+esc(shown)+'</span></div>';
+  }).join("");
+}
+function renderApprovals(pa){
+  pendingNow = (pa && pa.approvals) || [];
+  if (pendingNow.length)
+    lastPresented = { action_id: pendingNow[0].action_id, payload_hash: pendingNow[0].payload_hash };
+  else lastPresented = null;
+  $("approvals").innerHTML = pendingNow.length ? pendingNow.map(a =>
+    '<div class="appr" id="card-'+esc(a.action_id)+'">'+
+      '<div class="r1"><span class="aid">'+esc(a.action_id)+'</span>'+
+      '<span class="tag-state tag-PENDING">TIER '+esc(a.tier)+' · PENDING</span></div>'+
+      '<div class="act">'+esc(a.action)+'</div>'+
+      '<div class="by">requested by '+esc(a.requested_by)+' · the decision binds to this exact payload:</div>'+
+      '<div class="payload">'+payloadRows(a.payload)+'</div>'+
+      '<div class="hashline"><span class="hash-big mono">'+esc(a.short_hash)+'</span>'+
+      '<span class="hash-full mono">SHA-256 '+esc(a.payload_hash)+'</span></div>'+
+      '<div class="btnrow">'+
+        '<button class="btn btn-approve" data-decide="APPROVED" data-aid="'+esc(a.action_id)+'">Approve</button>'+
+        '<button class="btn btn-deny" data-decide="DENIED" data-aid="'+esc(a.action_id)+'">Deny</button>'+
+      '</div>'+
+      '<button class="btn-tamper" data-tamper="'+esc(a.action_id)+'">⚠ TAMPER TEST — edit one digit of this payload, then try to approve</button>'+
+      '<div class="tamper-cap">Simulates the classic attack: the action is quietly edited <i>after</i> the owner saw it. '+
+      'The edited payload\'s hash no longer matches the hash on record, so the server must refuse — and void the request.</div>'+
+    '</div>').join("")
+  : '<p class="none-note">None waiting. The next send / spend / publish an agent attempts lands here for your decision.</p>';
+  document.querySelectorAll("[data-decide]").forEach(b=>{
+    b.onclick = ()=> decideFromButton(b.getAttribute("data-aid"), b.getAttribute("data-decide"));
+  });
+  document.querySelectorAll("[data-tamper]").forEach(b=>{
+    b.onclick = ()=> tamperDemo(b.getAttribute("data-tamper"));
+  });
+}
+async function refreshAll(){
+  try {
+    const cs = await callTool("company_status", {});
+    renderStats(cs);
+    const ms = await callTool("mission_status", {});
+    renderBoard(ms.missions || []);
+    const uc = await callTool("unverified_claims", {});
+    renderClaims(uc);
+    const pa = await callTool("pending_approvals", {});
+    renderApprovals(pa);
+  } catch(e){ /* refresh is best-effort; conversation surfaces errors */ }
+}
+
+/* ---------------- verdict banner ---------------- */
+function showVerdict(kind, head, bodyHtml){
+  const v = $("verdict");
+  v.className = "verdict show " + kind;
+  v.innerHTML = '<div class="vh">'+head+'</div><div>'+bodyHtml+'</div>';
+  v.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+function hideVerdict(){ $("verdict").className = "verdict"; }
+
+/* ---------------- decisions: buttons + the tamper hero ---------------- */
+async function decideFromButton(actionId, decision){
+  const a = pendingNow.find(x=>x.action_id===actionId);
+  if (!a) return;
+  bubble("user", decision==="APPROVED" ? "Approve "+actionId : "Deny "+actionId);
+  await runDecision(actionId, decision, a.payload_hash, a);
+}
+async function runDecision(actionId, decision, presentedHash, approvalView){
+  const tr = trace();
+  try {
+    const out = await callTool("decide_approval",
+      { action_id:actionId, decision:decision, payload_hash:presentedHash }, tr);
+    if (out.ok){
+      showVerdict("ok", "✓ " + out.decision + " — RECORDED IN THE LEDGER",
+        esc(actionId) + " is ledger entry " + esc(out.ledger_seq) + ", bound to payload hash " +
+        '<span class="mono">'+esc((out.payload_hash||"").slice(0,16))+"…</span>"+". One-way: it cannot be undone.");
+    } else if (out.voided){
+      showVerdict("void", "⛔ SERVER REFUSED — APPROVAL VOIDED",
+        esc(out.error || "Payload hash mismatch.") +
+        "<br>The decision was <b>not</b> applied to a payload the owner never saw. " +
+        esc(actionId) + " is void — permanently out of the pending queue.");
+    } else {
+      showVerdict("void", "DECISION REFUSED", esc(out.error || out.say || "Refused."));
+    }
+    say(out.say || "(no answer)");
+  } catch(e){
+    say("The decision could not be recorded — the MCP server did not answer.");
+  }
+  await refreshAll();
+}
+/* Alter exactly one digit of the payload, then submit the EDITED payload's
+   hash as if approving. The server compares it to the hash of the payload
+   on record, refuses, and voids the request. This is the hero mechanic. */
+function tamperPayload(payload){
+  const clone = JSON.parse(JSON.stringify(payload));
+  const diffs = [];
+  (function walk(obj, path){
+    for (const k of Object.keys(obj)){
+      if (diffs.length) return;
+      const v = obj[k];
+      if (typeof v === "number"){
+        const nv = Number(String(v) + "9");           // 49 -> 499: one digit changed
+        obj[k] = nv; diffs.push({key:path+k, from:v, to:nv}); return;
+      }
+      if (v && typeof v === "object"){ walk(v, path+k+"."); if (diffs.length) return; }
+    }
+    if (!diffs.length){
+      for (const k of Object.keys(obj)){
+        if (typeof obj[k] === "string"){
+          const nv = obj[k] + " (edited)"; diffs.push({key:path+k, from:obj[k], to:nv}); obj[k] = nv; return;
+        }
+      }
+    }
+  })(clone, "");
+  return { tampered: clone, diff: diffs[0] || null };
+}
+async function tamperDemo(actionId){
+  const a = pendingNow.find(x=>x.action_id===actionId) ||
+            (lastPresented && lastPresented.action_id===actionId ? lastPresented : null);
+  if (!a || !a.payload){ say("There is no pending approval to tamper with right now."); return; }
+  bubble("user", "Tamper test on " + actionId + " — edit the payload, then try to approve it");
+  const { tampered, diff } = tamperPayload(a.payload);
+  const tamperedHash = payloadHash(tampered);
+  const note = "Watch closely. I am changing " +
+    (diff ? diff.key + " from " + JSON.stringify(diff.from) + " to " + JSON.stringify(diff.to) : "the payload") +
+    " — one digit, after you already saw the original. Now I submit the edited payload's hash, " +
+    tamperedHash.slice(0,8) + ", instead of the presented " + a.payload_hash.slice(0,8) +
+    ". If the concierge is honest, the server refuses and voids the request.";
+  say(note);
+  await runDecision(actionId, "APPROVED", tamperedHash, a);
+}
+
+/* ---------------- conversation: streaming + speech ---------------- */
+const transcript = $("transcript");
+let ttsOn = true;
+function bubble(who, text){
+  const d = document.createElement("div");
+  d.className = "msg " + who; d.textContent = text;
+  transcript.appendChild(d); transcript.scrollTop = transcript.scrollHeight;
+  return d;
+}
+function trace(){
+  const d = document.createElement("div");
+  d.className = "trace"; d.textContent = "→ tools/call …";
+  transcript.appendChild(d); transcript.scrollTop = transcript.scrollHeight;
+  return d;
+}
+function speak(text){
+  if (!ttsOn) return;
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 1.03;
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+  } catch(e){ /* voice out is best-effort */ }
+}
+function say(text){
+  const el = bubble("alexa", "");
+  el.classList.add("caret");
+  speak(text);
+  let i = 0; const step = Math.max(2, Math.round(text.length / 90));
+  const iv = setInterval(()=>{
+    i = Math.min(text.length, i + step);
+    el.textContent = text.slice(0, i);
+    transcript.scrollTop = transcript.scrollHeight;
+    if (i >= text.length){ clearInterval(iv); el.classList.remove("caret"); }
+  }, 14);
+}
+
+/* ---------------- NLU: rule-based matcher over intents.json ---------------- */
+let INTENTS = [];
+function loadIntents(){
+  const paths = ["/intents.json", "intents.json"];
+  (function next(i){
+    if (i >= paths.length) return;
+    fetch(paths[i]).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+      .then(j=>{ INTENTS = j.interactionModel.languageModel.intents; })
+      .catch(()=>next(i+1));
+  })(0);
+}
+function norm(s){ return s.toLowerCase().replace(/[?.!,"]/g," ").replace(/\s+/g," ").trim(); }
+function matchIntent(raw){
+  const t = norm(raw.replace(/^alexa\s+/, "").replace(/^ask a b u z 8\s+/, "").replace(/^ask abuz8\s+/, ""));
+  if (/\btamper/.test(t) || /\bchange the (price|payload|amount)\b/.test(t) || /\bedit the payload\b/.test(t))
+    return { special:"tamper" };
+  for (const intent of INTENTS){
+    for (const sample of (intent.samples || [])){
+      const pat = norm(sample)
+        .replace("{missionid}", "(m-\\d+)").replace("{actionid}", "(a-\\d+)");
+      const m = t.match(new RegExp("^" + pat + "$")) || t.match(new RegExp(pat.replace(/ /g, "\\s+")));
+      if (m){
+        const args = Object.assign({}, intent.arguments);
+        if (m[1]){
+          const v = m[1].toUpperCase();
+          if (intent.slots && intent.slots[0].name === "MissionId") args.mission_id = v;
+          if (intent.slots && intent.slots[0].name === "ActionId") args.action_id = v;
+        }
+        if (intent.tool === "decide_approval"){
+          if (!args.action_id && lastPresented) args.action_id = lastPresented.action_id;
+          if (lastPresented) args.payload_hash = lastPresented.payload_hash;
+        }
+        return { tool:intent.tool, args };
+      }
+    }
+  }
+  const mid = t.match(/\b(m-\d+)\b/);
+  if (mid) return { tool:"mission_status", args:{ mission_id: mid[1].toUpperCase() } };
+  if (/\b(approve|go ahead)\b/.test(t) && lastPresented)
+    return { tool:"decide_approval", args:{ action_id:lastPresented.action_id, decision:"APPROVED", payload_hash:lastPresented.payload_hash } };
+  if (/\b(deny|reject)\b/.test(t) && lastPresented)
+    return { tool:"decide_approval", args:{ action_id:lastPresented.action_id, decision:"DENIED", payload_hash:lastPresented.payload_hash } };
+  return null;
+}
+
+async function handle(raw){
+  if (!raw || !raw.trim()) return;
+  bubble("user", raw);
+  const hit = matchIntent(raw);
+  if (hit && hit.special === "tamper"){
+    if (pendingNow.length) tamperDemo(pendingNow[0].action_id);
+    else say("There is no pending approval to tamper with. Approvals land in the Tier-3 deck when an agent tries to send, spend, or publish.");
+    return;
+  }
+  if (!hit){
+    say("I can check your company status, list missions, show what is still only claimed, present approvals waiting for your decision — or run the tamper test on a pending approval. Try one of the suggestions below.");
+    return;
+  }
+  const tr = trace();
+  try {
+    const out = await callTool(hit.tool, hit.args, tr);
+    say(out.say || "(no answer)");
+    if (hit.tool === "decide_approval"){
+      if (out.ok) showVerdict("ok", "✓ " + out.decision + " — RECORDED IN THE LEDGER",
+        "Ledger entry " + esc(out.ledger_seq) + ", bound to payload hash " +
+        '<span class="mono">' + esc((out.payload_hash || "").slice(0, 16)) + "…</span>");
+      else if (out.voided) showVerdict("void", "⛔ SERVER REFUSED — APPROVAL VOIDED", esc(out.error || "Payload hash mismatch."));
+      else showVerdict("void", "DECISION REFUSED", esc(out.error || "Refused."));
+    }
+  } catch(e){
+    say("The MCP server did not answer. Start it with: python mcp_server/server.py — or keep exploring: this console falls back to DEMO MODE with the sample ledger.");
+  }
+  hideVerdictIfStale();
+  await refreshAll();
+}
+function hideVerdictIfStale(){ /* verdicts persist until the next decision; board refresh keeps context */ }
+
+/* ---------------- chips / input / mic ---------------- */
+const DEMO_CHIPS = [
+  "Alexa, ask ABUZ8 for my company status",
+  "What is still only claimed?",
+  "Is M-102 done?",
+  "Are there any approvals waiting?",
+  "Approve it"
+];
+function buildChips(){
+  const box = $("chips"); box.innerHTML = "";
+  DEMO_CHIPS.forEach(line=>{
+    const b = document.createElement("button");
+    b.className = "chip"; b.textContent = "“" + line + "”";
+    b.onclick = ()=> handle(line); box.appendChild(b);
+  });
+  const tb = document.createElement("button");
+  tb.className = "chip hero"; tb.textContent = "⚠ Run the tamper test";
+  tb.onclick = ()=>{ if (pendingNow.length) tamperDemo(pendingNow[0].action_id);
+                     else say("No pending approval to tamper with right now."); };
+  box.appendChild(tb);
+  if (MODE === "demo"){
+    const rb = document.createElement("button");
+    rb.className = "chip"; rb.textContent = "↺ Reset demo ledger";
+    rb.onclick = ()=>{ demoFeed.reset(); hideVerdict(); refreshAll();
+                       say("Demo ledger reset to the sample feed. Both approvals are pending again."); };
+    box.appendChild(rb);
+  }
+}
+$("send").onclick = ()=>{ const inp = $("input"); const v = inp.value; inp.value=""; handle(v); };
+$("input").addEventListener("keydown", e=>{ if (e.key==="Enter") $("send").click(); });
+$("ttsBtn").onclick = ()=>{
+  ttsOn = !ttsOn;
+  $("ttsBtn").textContent = ttsOn ? "VOICE: ON" : "VOICE: OFF";
+  $("ttsBtn").classList.toggle("off", !ttsOn);
+  if (!ttsOn) { try { speechSynthesis.cancel(); } catch(e){} }
+};
+const micBtn = $("mic");
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if (SR){
+  const rec = new SR(); rec.lang = "en-US"; rec.interimResults = true;
+  rec.onresult = e=>{
+    let interim = "", final = "";
+    for (const r of e.results){ if (r.isFinal) final += r[0].transcript; else interim += r[0].transcript; }
+    if (interim) $("input").value = interim;
+    if (final){ $("input").value = ""; micBtn.classList.remove("listening"); handle(final); }
+  };
+  rec.onend = ()=> micBtn.classList.remove("listening");
+  rec.onerror = ()=> micBtn.classList.remove("listening");
+  micBtn.onclick = ()=>{ try { rec.start(); micBtn.classList.add("listening"); } catch(e){} };
+} else {
+  micBtn.classList.add("unsupported");
+  micBtn.title = "Speech recognition is not supported in this browser — typing works identically.";
+}
+
+/* ---------------- boot ---------------- */
+loadIntents();
+(async function boot(){
+  try { await mcpCall("company_status", {}); setMode("live"); }
+  catch(e){ setMode("demo"); }
+  buildChips();
+  bubble("sys", MODE==="live"
+    ? "Connected to the Ask ABUZ8 MCP server. Every answer below is a live tool call against the ledger."
+    : "MCP server not detected — DEMO MODE: the same ISNAD rules are running locally over the sample ledger (data/feed.json, mirrored). Start mcp_server/server.py for the live server.");
+  await refreshAll();
+  say("Welcome to Ask ABUZ8 mission control. Ask me for your company status, what is still only claimed, or what needs your approval.");
+})();
+</script>
+</body>
+</html>
