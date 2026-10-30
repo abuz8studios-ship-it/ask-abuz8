@@ -6,3 +6,4 @@
 - Attach the demo video to the v1.0.0 GitHub Release once recorded (release exists).
 - Wire the APL approval card's live datasource once an Alexa+ Agent Skill slot is granted (sample A-201 datasource ships in the doc today).
 - Consider `pip --upgrade` noise: fresh venvs print a pip-update notice; harmless, ignore unless it confuses judges.
+- Mobile wrapper (Expo webview over the console) — needs the web-live public URL first; pointless against localhost.

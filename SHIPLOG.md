@@ -15,3 +15,11 @@ PROOF:    zip built by appliance/build_appliance.ps1 [live-probed] → extracted
 UPDATE:   edit → suites green → appliance/build_appliance.ps1 → extract+smoke → gh release upload → commit+push+tag
 BLOCKERS: none (unsigned exe: SmartScreen "More info → Run anyway" documented in appliance README; clean-machine test is Ahmad's)
 NEXT:     demo video; stable public endpoint; signed build (see NEXT.md)
+
+✅ Ask ABUZ8 CI+Pipeline v1.3.0 — DONE
+WHAT:     Every push CI-greens 22 checks + MCP smoke on Windows+Linux; every tag auto-builds the portable appliance on a clean runner and attaches zip+sha to the release.
+USE IT:   push → https://github.com/abuz8studios-ship-it/ask-abuz8/actions ; tag vX.Y.Z → release appears with artifacts
+PROOF:    ubuntu+windows legs green from CI logs (22/22 + smoke each) [live-probed] → v1.3.0 job built 14.9MB zip on clean runner in 74s [live-probed] → downloaded zip matches published sha256 exactly [live-probed] → extracted CI zip booted, full 7-assertion flow green [live-probed] → workflows secret-free (GITHUB_TOKEN context only) [verified]
+UPDATE:   edit workflows → push → watch gh run list → tag to ship
+BLOCKERS: none
+NEXT:     web-live hosting (Ahmad's Cloudflare go-ahead), mobile wrapper after that (see NEXT.md)
