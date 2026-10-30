@@ -7,3 +7,11 @@ PROOF:    clean GitHub clone + README install → 22/22 core checks [live-probed
 UPDATE:   edit → tests/test_core.py + tests/smoke_mcp.py green → git commit → git push origin main → move tag: git tag -f vX.Y.Z && git push -f origin vX.Y.Z
 BLOCKERS: none (quick-tunnel leg environment-blocked on this network; named-tunnel/VPS path documented in HOSTING.md and proxied-Host behavior proven locally)
 NEXT:     record the DEMO-SCRIPT.md video; stand up the stable public hostname (see NEXT.md)
+
+✅ Ask ABUZ8 Portable v1.2.0 — DONE
+WHAT:     USB-stick appliance: frozen MCP server + console + sample ledger + double-click launcher, no Python/install/network needed.
+USE IT:   https://github.com/abuz8studios-ship-it/ask-abuz8/releases → Ask-ABUZ8-Portable-win64.zip → unzip → Start-Ask-ABUZ8.bat
+PROOF:    zip built by appliance/build_appliance.ps1 [live-probed] → extracted fresh from zip: full 7-step flow incl. tamper-void on frozen exe [live-probed] → decisions persist across relaunch [live-probed] → --fresh resets to pristine [live-probed] → history+bundle secret scan clean (1 explained OpenSSL-label FP) [verified] → pip-audit zero vulns [live-probed]
+UPDATE:   edit → suites green → appliance/build_appliance.ps1 → extract+smoke → gh release upload → commit+push+tag
+BLOCKERS: none (unsigned exe: SmartScreen "More info → Run anyway" documented in appliance README; clean-machine test is Ahmad's)
+NEXT:     demo video; stable public endpoint; signed build (see NEXT.md)

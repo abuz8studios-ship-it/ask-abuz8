@@ -1,0 +1,5 @@
+# Owner feed override for the Ask ABUZ8 portable appliance.
+# Put your live company feed path on the first line that does NOT start with '#'.
+# Leave this file all-comments to run the bundled sample ledger.
+# Example:
+# E:\ABU\company\feed\feed.json

@@ -48,7 +48,10 @@ from starlette.responses import HTMLResponse, JSONResponse, PlainTextResponse
 
 import isnad_core as core
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if getattr(sys, "frozen", False):  # PyInstaller appliance: data sits next to the exe
+    ROOT = os.path.dirname(os.path.abspath(sys.executable))
+else:
+    ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SIM_DIR = os.path.join(ROOT, "simulator")
 
 # ------------------------------------------------------------------- feed ---

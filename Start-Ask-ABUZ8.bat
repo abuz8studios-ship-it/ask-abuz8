@@ -17,7 +17,13 @@ where py >nul 2>nul
 if %ERRORLEVEL%==0 ( set PY=py ) else ( set PY=python )
 if not exist ".venv\Scripts\python.exe" (
   echo [setup] creating virtualenv...
-  %PY% -m venv .venv || ( echo [setup] FAILED to create .venv & pause & exit /b 1 )
+  %PY% -m venv .venv >nul 2>nul
+  if not exist ".venv\Scripts\python.exe" (
+    echo [setup] %PY% failed, retrying with python...
+    if exist ".venv" rmdir /s /q .venv
+    python -m venv .venv >nul 2>nul
+  )
+  if not exist ".venv\Scripts\python.exe" ( echo [setup] FAILED to create .venv & pause & exit /b 1 )
 )
 echo [setup] installing dependencies...
 ".venv\Scripts\python.exe" -m pip install -q -r requirements.txt || ( echo [setup] pip install FAILED & pause & exit /b 1 )
