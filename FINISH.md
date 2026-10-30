@@ -1,5 +1,5 @@
-FINISH LINE:   Ask ABUZ8 ships everywhere it can with zero new accounts: every push CI-greens the 22 checks + MCP smoke on Windows+Linux, and every tag auto-builds the portable appliance and attaches it to the release.
-TARGET:        GitHub CI (test matrix) + tag-triggered appliance release pipeline
-CORE FLOW:     (1) push → CI green (2) tag vX.Y.Z → release job builds zip on a clean runner (3) zip+sha attached to release (4) download verified byte-identical
+FINISH LINE:   Ask ABUZ8 steady-state: every shipped surface re-proven green from disk (repo install+tests, appliance zip, CI pipeline, live demo hygiene), zero drift between docs and reality, zero open defects.
+TARGET:        Verified steady state (no new surface this run)
+CORE FLOW:     (1) probe all surfaces live (2) rank gaps (3) fix top-down with proof (4) re-run full gates (5) close with receipt
 MONEY PATH:    n/a (free/open-source; no checkout)
-OUT OF SCOPE:  web-live hosting (needs Ahmad's Cloudflare/DNS go-ahead), mobile wrapper (needs web-live URL first), signed builds (needs cert), installer
+OUT OF SCOPE:  new features, new platforms, public exposure (still gated on Ahmad's explicit go-ahead), video, Devpost actions

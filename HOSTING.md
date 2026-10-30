@@ -17,7 +17,7 @@ into the `https://YOUR-MCP-ENDPOINT/mcp` slots in
 | `PORT` | `8377` | Port the server listens on. |
 | `ASK_ABUZ8_FEED` | `data/feed.runtime.json` | Ledger file. Auto-seeded from `data/feed.json` on first run; decisions append here. Point it at the production company feed to run live. |
 | `ASK_ABUZ8_ALLOWED_HOSTS` | _(unset)_ | Public hostname(s) accepted on `/mcp` behind a proxy/tunnel (comma-separated, bare hosts or full URLs). **Required for public exposure** — without it the SDK answers proxied calls with `421 Invalid Host header`. Localhost stays allowed either way. |
-| `FASTMCP_HOST` | `127.0.0.1` | Bind address. The MCP SDK reads `FASTMCP_`-prefixed env vars, so containers set it to `0.0.0.0` **inside** the container with no code change (the `Dockerfile` does this). On a bare host, leave it on loopback and let the proxy forward. |
+| `FASTMCP_HOST` | `127.0.0.1` | Bind address. `server.py` forwards this var into the FastMCP constructor (SDK defaults would otherwise shadow it), so containers set it to `0.0.0.0` **inside** the container (the `Dockerfile` does this). On a bare host, leave it on loopback and let the proxy forward. |
 
 State note: the transport is stateless HTTP with JSON responses — any
 process can serve any request — but the *ledger file is the state*.

@@ -23,3 +23,11 @@ PROOF:    ubuntu+windows legs green from CI logs (22/22 + smoke each) [live-prob
 UPDATE:   edit workflows → push → watch gh run list → tag to ship
 BLOCKERS: none
 NEXT:     web-live hosting (Ahmad's Cloudflare go-ahead), mobile wrapper after that (see NEXT.md)
+
+✅ Ask ABUZ8 Steady-State (ahmad audit) — DONE
+WHAT:     Full re-probe: every shipped surface re-verified, last two untested branches closed (start.sh on real Linux, .bat py-fallback on real misfire), one doc drift fixed.
+USE IT:   unchanged — repo, starters, appliance zip, CI pipeline (see stanzas above)
+PROOF:    22/22 + smoke local [live-probed] → CI 4/4 incl. prior unwatched run [live-probed] → start.sh end-to-end on Debian (apt→venv→boot→/health→/→MCP) [live-probed] → .bat fallback fired on real py failure, fresh venv served, dev venv restored intact [live-probed] → live demo untouched throughout [live-probed] → HOSTING FASTMCP row corrected to disk truth [verified]
+UPDATE:   same as v1.3.0 stanza
+BLOCKERS: none (WSL Ubuntu VHD missing on this box — Debian used instead; start.sh unaffected)
+NEXT:     web-live hosting (Ahmad's go-ahead), demo video, submitted-yes/no answer
