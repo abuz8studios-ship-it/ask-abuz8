@@ -59,7 +59,9 @@ macOS/Linux:  ./start.sh [--fresh]
 ```
 
 That creates the venv if needed, installs the one dependency, starts the
-server, and opens the console. Then click the chips: company status →
+server, and opens the console. No Python at all? Grab the portable
+appliance instead ([releases](https://github.com/abuz8studios-ship-it/ask-abuz8/releases)):
+unzip → double-click `Start-Ask-ABUZ8.bat`. Then click the chips: company status →
 *what is still only claimed* → approvals → **TAMPER TEST**. No account,
 no hardware, no network needed. To stop: close the server window
 (`Ctrl+C` on macOS/Linux).
