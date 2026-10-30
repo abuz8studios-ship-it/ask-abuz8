@@ -1,5 +1,5 @@
-FINISH LINE:   A stranger downloads Ask-ABUZ8-Portable-win64.zip from the GitHub release, unzips on a Windows PC with no Python, double-clicks Start-Ask-ABUZ8.bat, and runs the full concierge demo offline (LIVE board, tamper-void, persisted approve).
-TARGET:        Portable zip artifact attached to the GitHub release + committed build script/spec
-CORE FLOW:     (1) unzip (2) double-click launcher (3) console opens LIVE (4) tamper test voids (5) clean approve persists across relaunch (6) --fresh resets
-MONEY PATH:    n/a (free/open-source appliance; no checkout)
-OUT OF SCOPE:  macOS/Linux builds, installer, auto-update, cloud hosting, Alexa provisioning, core behavior changes
+FINISH LINE:   Ask ABUZ8 ships everywhere it can with zero new accounts: every push CI-greens the 22 checks + MCP smoke on Windows+Linux, and every tag auto-builds the portable appliance and attaches it to the release.
+TARGET:        GitHub CI (test matrix) + tag-triggered appliance release pipeline
+CORE FLOW:     (1) push → CI green (2) tag vX.Y.Z → release job builds zip on a clean runner (3) zip+sha attached to release (4) download verified byte-identical
+MONEY PATH:    n/a (free/open-source; no checkout)
+OUT OF SCOPE:  web-live hosting (needs Ahmad's Cloudflare/DNS go-ahead), mobile wrapper (needs web-live URL first), signed builds (needs cert), installer
