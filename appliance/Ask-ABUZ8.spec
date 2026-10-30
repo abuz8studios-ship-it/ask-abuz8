@@ -61,6 +61,10 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
+    # NOTE: requests/urllib3/pyOpenSSL/cryptography (~9 MB) ride along via the
+    # jsonschema.validators -> requests static edge. Do NOT "optimize" them
+    # away with excludes: jsonschema is imported at runtime and the frozen
+    # server dies on ModuleNotFoundError without them. Proven 2026-10-30.
     excludes=[],
     noarchive=False,
 )
