@@ -189,7 +189,7 @@ day one.
 
 Submitted with the project (full text in `FRICTION-LOG.md` in the repo
 root): (1) MCP Python SDK v2 renamed FastMCP —
-imports broke, fixed by pinning `mcp<2` (1.30.0); (2) `$150` AWS credit
+imports broke, fixed by pinning `mcp==1.30.0`; (2) `$150` AWS credit
 form already closed / codes exhausted — worked around by building fully
 locally at zero cost; (3) no self-serve Alexa+ Agent Skill on-ramp found —
 took the rules' MCP-server + simulated-experience paths instead.

@@ -1,6 +1,7 @@
 # Ask ABUZ8 — a voice concierge that never calls a claim "done"
 
 **Amazon Build, Ship, Shape — Alexa+ track (+ Open Source mini challenge).**
+Releases: <https://github.com/abuz8studios-ship-it/ask-abuz8/releases>
 
 Ask ABUZ8 is the voice front-end for an autonomous agent company. The owner
 runs a fleet of AI agents that do real work — packaging products, auditing
@@ -50,7 +51,20 @@ repo ships both surfaces over one core:
 | Hosting | `Dockerfile`, `HOSTING.md` | Container for the MCP server plus a guide to exposing it as a public Streamable HTTP endpoint (reverse proxy / tunnel / VPS), with health checks and the honest security posture. |
 | Sample data | `data/feed.json` | An append-only feed in the exact shape of the production company-harness feed, with representative events from the real fleet (Oct 2026). |
 
-### Run it
+### Run it in 60 seconds (judges start here)
+
+```text
+Windows:  double-click Start-Ask-ABUZ8.bat   (add --fresh for a pristine demo ledger)
+macOS/Linux:  ./start.sh [--fresh]
+```
+
+That creates the venv if needed, installs the one dependency, starts the
+server, and opens the console. Then click the chips: company status →
+*what is still only claimed* → approvals → **TAMPER TEST**. No account,
+no hardware, no network needed. To stop: close the server window
+(`Ctrl+C` on macOS/Linux).
+
+### Run it (manual)
 
 ```bash
 python3 -m venv .venv

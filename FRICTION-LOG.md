@@ -12,7 +12,7 @@ workaround · actionable suggestion.
   (`mcp.server.mcpserver`) and changed other APIs, so current-install +
   documented-code disagree.
 - **Severity:** Medium (blocked the build until diagnosed).
-- **Workaround:** pinned `mcp<2` → installed 1.30.0, whose
+- **Workaround:** pinned `mcp<2` → installed 1.30.0 (tightened to `mcp==1.30.0` in the launch pass for deterministic installs), whose
   `LATEST_PROTOCOL_VERSION` is exactly `2025-11-25`, the spec version the
   Alexa+ track requires.
 - **Suggestion:** put a "known-good versions" note on the Alexa+ resources
