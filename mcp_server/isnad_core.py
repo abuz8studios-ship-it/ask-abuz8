@@ -44,7 +44,12 @@ def canonical_hash(payload) -> str:
     presented. If the payload changes after the request, the hash changes
     and the approval no longer matches -- the decision is refused.
     """
-    blob = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    # ensure_ascii=False: the canonical bytes are UTF-8, byte-identical to the
+    # in-page port in simulator/index.html (canonicalJSON + sha256Hex), so
+    # DEMO MODE hashes match the server for every payload, not just ASCII.
+    # For pure-ASCII payloads the bytes are unchanged (no escapes involved).
+    blob = json.dumps(payload, sort_keys=True, separators=(",", ":"),
+                      ensure_ascii=False).encode("utf-8")
     return hashlib.sha256(blob).hexdigest()
 
 

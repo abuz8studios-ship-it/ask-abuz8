@@ -64,6 +64,14 @@ a201 = [a for a in pend if a["action_id"] == "A-201"][0]
 good_hash = a201["payload_hash"]
 check("payload hash is a full sha256 hex digest",
       len(good_hash) == 64 and all(c in "0123456789abcdef" for c in good_hash))
+check("A-201 hash is pinned (APL card, demo script, simulator agree)",
+      good_hash == "584a201ffe654a5d1ec9c46bd7b8e543a41bc8052a5074d7e750e04608b09bac")
+apl = json.load(open(os.path.join(ROOT, "alexa", "apl", "approval-card.json"), encoding="utf-8"))
+check("APL approval card carries the same A-201 hash",
+      apl["datasources"]["approval"]["payloadHash"] == good_hash)
+check("non-ASCII payload hashes as UTF-8 (matches the in-page JS port)",
+      core.canonical_hash({"op": "post", "text": "héllo “world” ✓"}) ==
+      "086c84aa391091877f64fac11a2dcf3c25381106309eceb04b746ee77b469352")
 
 tampered = dict(feed.approvals()["A-201"]["payload"], price_usd=4900)
 check("tampering the payload changes the hash",

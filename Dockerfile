@@ -21,8 +21,8 @@ COPY mcp_server/ ./mcp_server/
 COPY data/ ./data/
 COPY simulator/ ./simulator/
 
-# FASTMCP_HOST: the MCP Python SDK reads FASTMCP_-prefixed env vars, so the
-# server binds 0.0.0.0 *inside the container* with zero code changes.
+# FASTMCP_HOST is forwarded by server.py into the FastMCP constructor, so the
+# server binds 0.0.0.0 *inside the container* (verified by docker build + run).
 # Decisions append to data/feed.runtime.json (seeded from data/feed.json on
 # first run) — mount a volume at /app/data to persist the ledger.
 EXPOSE 8377

@@ -29,6 +29,9 @@ Env:
   ASK_ABUZ8_FEED   path to the feed JSON (default: data/feed.runtime.json,
                    auto-seeded from data/feed.json on first run)
   PORT             default 8377
+  ASK_ABUZ8_ALLOWED_HOSTS  comma-separated public hostnames accepted on /mcp
+                   behind a proxy/tunnel (required for public exposure --
+                   without it the SDK answers proxied calls with 421)
 """
 
 import json
@@ -39,6 +42,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from mcp.server.fastmcp import FastMCP
+from mcp.server.transport_security import TransportSecuritySettings
 from starlette.requests import Request
 from starlette.responses import HTMLResponse, JSONResponse, PlainTextResponse
 
@@ -57,6 +61,27 @@ def feed_path() -> str:
     if not os.path.exists(runtime):
         shutil.copyfile(os.path.join(ROOT, "data", "feed.json"), runtime)
     return runtime
+
+
+def transport_security():
+    """DNS-rebinding allowlist: localhost always, plus ASK_ABUZ8_ALLOWED_HOSTS.
+
+    The SDK locks loopback binds to localhost Host headers only, so a reverse
+    proxy or tunnel that forwards the public Host gets a 421 on /mcp unless
+    the public name is allowlisted. Comma-separated; bare hosts or full URLs.
+    Unset -> SDK default behavior (strict localhost on loopback binds).
+    """
+    extra = [h.strip() for h in os.environ.get("ASK_ABUZ8_ALLOWED_HOSTS", "").split(",") if h.strip()]
+    if not extra:
+        return None
+    hosts = ["127.0.0.1:*", "localhost:*", "[::1]:*"]
+    origins = ["http://127.0.0.1:*", "http://localhost:*", "http://[::1]:*"]
+    for h in extra:
+        h = h.split("://", 1)[-1].rstrip("/")
+        hosts += [h, h + ":*"]
+        origins += ["https://" + h, "http://" + h]
+    return TransportSecuritySettings(enable_dns_rebinding_protection=True,
+                                     allowed_hosts=hosts, allowed_origins=origins)
 
 
 def load_feed() -> core.Feed:
@@ -88,6 +113,8 @@ mcp = FastMCP(
         "(sending, spending, publishing) require the owner's approval, "
         "bound to the exact payload by its SHA-256 hash."
     ),
+    transport_security=transport_security(),
+    host=os.environ.get("FASTMCP_HOST", "127.0.0.1"),
     stateless_http=True,
     json_response=True,
     port=int(os.environ.get("PORT", "8377")),

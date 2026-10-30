@@ -9,8 +9,8 @@ climax, not an afterthought.
 ## Before you press record (2 minutes)
 
 1. Terminal in the project folder:
-   `rm -f data/feed.runtime.json` then
-   `.venv/bin/python mcp_server/server.py`
+   `rm -f data/feed.runtime.json` (Windows: `del data\feed.runtime.json`) then
+   `.venv/bin/python mcp_server/server.py` (Windows: `.venv\Scripts\python mcp_server/server.py`)
    (fresh ledger: both approvals pending, nothing decided yet)
 2. Browser: open `http://127.0.0.1:8377/` — check the LIVE pill is on,
    the board shows M-101 VERIFIED (green), M-102 sitting in the amber

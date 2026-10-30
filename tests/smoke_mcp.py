@@ -7,9 +7,12 @@ talks to it with raw JSON-RPC -- the same protocol Alexa+ speaks.
 Verifies: initialize handshake negotiates MCP protocol 2025-11-25,
 tools/list exposes the five concierge tools, and a full conversation works
 (status -> unverified claims -> approvals -> hash-bound approve -> the
-decision is visible in a fresh call). Exits non-zero on any failure.
+decision is visible in a fresh call), and that the Host allowlist accepts the
+public name while refusing unknown hosts with 421. Exits non-zero on any
+failure.
 """
 
+import http.client
 import json
 import os
 import subprocess
@@ -47,6 +50,20 @@ def rpc(method, params=None, session=None):
     return json.loads(raw), sid
 
 
+def raw_post_status(host_header):
+    """POST /mcp with a forged Host header (what a proxy/tunnel sends)."""
+    conn = http.client.HTTPConnection("127.0.0.1", PORT, timeout=15)
+    body = json.dumps({"jsonrpc": "2.0", "id": 999, "method": "tools/list",
+                       "params": {}})
+    conn.request("POST", "/mcp", body=body,
+                 headers={"Content-Type": "application/json",
+                          "Accept": "application/json, text/event-stream",
+                          "Host": host_header})
+    status = conn.getresponse().status
+    conn.close()
+    return status
+
+
 def call(name, args=None):
     out, _ = rpc("tools/call", {"name": name, "arguments": args or {}})
     assert "result" in out, f"{name} errored: {out}"
@@ -60,7 +77,8 @@ def main():
         tmp.write(fh.read())
     tmp.close()
 
-    env = dict(os.environ, ASK_ABUZ8_FEED=tmp.name, PORT=str(PORT))
+    env = dict(os.environ, ASK_ABUZ8_FEED=tmp.name, PORT=str(PORT),
+                     ASK_ABUZ8_ALLOWED_HOSTS="public.example")
     proc = subprocess.Popen(
         [sys.executable, os.path.join(ROOT, "mcp_server", "server.py")],
         env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
@@ -90,6 +108,11 @@ def main():
         print(f"  ok  tools/list -> {names}")
         assert names == ["company_status", "decide_approval", "mission_status",
                          "pending_approvals", "unverified_claims"], names
+
+        assert raw_post_status("public.example") == 200
+        print("  ok  Host: public.example (allowlisted) -> 200 on /mcp")
+        assert raw_post_status("evil.example") == 421
+        print("  ok  Host: evil.example (not allowlisted) -> 421 refused")
 
         st = call("company_status")
         print(f"  ok  company_status -> {st['by_state']}, pending {st['pending_approvals']}")

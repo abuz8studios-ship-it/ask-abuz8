@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>Ask ABUZ8 — Mission Control · Simulated Alexa+ Experience</title>
 <style>
   :root{
@@ -268,7 +269,7 @@
 
 /*PURE-BEGIN*/
 /* Canonical JSON: same encoding as Python json.dumps(payload,
-   sort_keys=True, separators=(",", ":")) for the ASCII payloads used here. */
+   sort_keys=True, separators=(",", ":"), ensure_ascii=False) — byte-identical UTF-8. */
 function canonicalJSON(v){
   if (v === null || typeof v === "number" || typeof v === "boolean") return JSON.stringify(v);
   if (typeof v === "string") return JSON.stringify(v);

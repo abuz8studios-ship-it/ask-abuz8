@@ -16,6 +16,7 @@ into the `https://YOUR-MCP-ENDPOINT/mcp` slots in
 |---|---|---|
 | `PORT` | `8377` | Port the server listens on. |
 | `ASK_ABUZ8_FEED` | `data/feed.runtime.json` | Ledger file. Auto-seeded from `data/feed.json` on first run; decisions append here. Point it at the production company feed to run live. |
+| `ASK_ABUZ8_ALLOWED_HOSTS` | _(unset)_ | Public hostname(s) accepted on `/mcp` behind a proxy/tunnel (comma-separated, bare hosts or full URLs). **Required for public exposure** — without it the SDK answers proxied calls with `421 Invalid Host header`. Localhost stays allowed either way. |
 | `FASTMCP_HOST` | `127.0.0.1` | Bind address. The MCP SDK reads `FASTMCP_`-prefixed env vars, so containers set it to `0.0.0.0` **inside** the container with no code change (the `Dockerfile` does this). On a bare host, leave it on loopback and let the proxy forward. |
 
 State note: the transport is stateless HTTP with JSON responses — any
@@ -88,6 +89,8 @@ No server, no DNS: run the server locally and expose it through a tunnel.
 .venv/bin/python mcp_server/server.py                 # listens on 127.0.0.1:8377
 cloudflared tunnel --url http://127.0.0.1:8377        # or: ngrok http 8377
 # -> https://<random-name>.trycloudflare.com
+# and restart the server with that name allowlisted:
+#   ASK_ABUZ8_ALLOWED_HOSTS=<random-name>.trycloudflare.com .venv/bin/python mcp_server/server.py
 ```
 
 Your endpoint is `https://<random-name>.trycloudflare.com/mcp` and the
@@ -118,15 +121,16 @@ reverse proxy from Option A in front. Identical exposure, one less layer.
   (Alexa service endpoints, your own console).
 - Keep the bind tight: loopback on the host, `0.0.0.0` only inside the
   container's private network. Never publish the raw port publicly.
-- The SDK auto-enables DNS-rebinding protection for localhost binds;
-  terminating TLS at the proxy keeps the server in that safest posture.
+- The SDK rejects `/mcp` calls whose Host header is not allowlisted (`421`, DNS-rebinding protection):
+  set `ASK_ABUZ8_ALLOWED_HOSTS` to your public hostname(s); the allowlist always
+  keeps localhost, and loopback binds stay strict when the variable is unset.
 - The ledger is append-only and decisions are one-way by design. If a
   decision ever needs to be *countermanded*, that is a new operational
   event in your process — the code deliberately offers no undo.
 
 ## Go-live checklist
 
-1. Pick a topology (A/B/C) and stand the server up.
+1. Pick a topology (A/B/C), set `ASK_ABUZ8_ALLOWED_HOSTS` to your public hostname, and stand the server up.
 2. `curl https://YOUR-HOST/health` → `ok`; run the initialize check above.
 3. Open `https://YOUR-HOST/` — the mission-control console should show
    **LIVE · MCP SERVER** in the top bar (it falls back to a labeled

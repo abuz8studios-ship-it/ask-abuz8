@@ -58,6 +58,8 @@ python3 -m venv .venv
 .venv/bin/python mcp_server/server.py
 ```
 
+> **Windows:** use `py` instead of `python3`, and `.venv\Scripts\python` instead of `.venv/bin/python`, in every command below.
+
 - MCP endpoint: `http://127.0.0.1:8377/mcp` (Streamable HTTP)
 - Simulated experience: `http://127.0.0.1:8377/`
 - Point it at your own feed: `ASK_ABUZ8_FEED=/path/to/feed.json`
@@ -70,7 +72,7 @@ pristine. Delete the runtime file to reset the demo.
 ### Test it
 
 ```bash
-python3 tests/test_core.py        # 19 checks: ISNAD folding, hash binding,
+python3 tests/test_core.py        # 22 checks: ISNAD folding, hash binding,
                                   # tamper-void, one-way decisions, persistence
 .venv/bin/python tests/smoke_mcp.py   # boots the real server, speaks JSON-RPC:
                                       # initialize (2025-11-25), tools/list,
@@ -90,8 +92,9 @@ python3 tests/test_core.py        # 19 checks: ISNAD folding, hash binding,
   same event types). Swapping the data source is an environment variable.
 - **Not claimed:** this repo does not connect to a physical Alexa+ device,
   and no Alexa skill is provisioned or deployed — the manifest's endpoint
-  URIs are placeholders (marked `REPLACE_ME_` / `YOUR-MCP-ENDPOINT`), and
-  the Dockerfile was reviewed but not built in the author's environment.
+  URIs are placeholders (marked `REPLACE_ME_` / `YOUR-MCP-ENDPOINT`).
+  The Dockerfile is build- and run-verified, including ledger persistence
+  across container re-creation with a named volume (HOSTING.md Option A).
   Alexa+ Agent Skill provisioning runs through Amazon's own program; the
   hackathon rules explicitly provide the two paths used here — a self-hosted
   MCP server (the standard Alexa+ plugs into) and the simulated experience.

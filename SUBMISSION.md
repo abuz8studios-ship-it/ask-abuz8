@@ -57,7 +57,7 @@ Built during the hackathon window: the MCP server, the ISNAD core, the
 reactive console, the Alexa-format interaction model (`intents.json`), a
 deployable Alexa skill package (`alexa/`: full interaction model, skill
 manifest, and an APL approval card for Echo Show), and a Dockerfile +
-hosting guide for running the server as a public endpoint — with 19 unit
+hosting guide for running the server as a public endpoint — with 22 unit
 checks and an end-to-end protocol smoke test in the repo.
 
 ## How it maps to the judging criteria
