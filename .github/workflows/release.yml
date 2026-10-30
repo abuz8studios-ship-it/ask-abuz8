@@ -10,4 +10,5 @@ jobs:
         with: { python-version: '3.11' }
       - run: powershell -ExecutionPolicy Bypass -File appliance\build_appliance.ps1
       - run: gh release create ${{ github.ref_name }} dist-appliance/Ask-ABUZ8-Portable-win64.zip dist-appliance/Ask-ABUZ8-Portable-win64.zip.sha256 --title "Ask ABUZ8 ${{ github.ref_name }}" --generate-notes
-        env: { GH_TOKEN: ${{ github.token }} }
+        env:
+          GH_TOKEN: ${{ github.token }}
